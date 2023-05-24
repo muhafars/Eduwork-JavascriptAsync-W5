@@ -1,58 +1,70 @@
-const tableContainer = document.getElementById("table-container");
+const apiKey = "2e64f4460f804598986e2abfb41085b9";
+const country = "id";
+// let url = `https://newsapi.org/v2/top-headlines?country=${country}&apiKey=${apiKey}`;
+const url = `https://newsapi.org/v2/top-headlines?country=us&apiKey=2e64f4460f804598986e2abfb41085b9`;
+// Fetch news articles from API
+fetch(url)
+  .then(function (response) {
+    return response.json();
+  })
+  .then(function (data) {
+    const articles = data.articles;
+    let output = "";
 
-fetch("https://jsonplaceholder.typicode.com/users")
-  .then(res => res.json())
-  .then(data => {
-    const columns = [
-      { title: "ID", field: "id" },
-      { title: "Name", field: "name" },
-      { title: "Username", field: "username" },
-      { title: "Email", field: "email" },
-      { title: "Address", field: "address" },
-      { title: "Company", field: "company" },
-    ];
+    // Otomatis menampilkan data
+    for (let i = 0; i < articles.length; i++) {
+      output += `
+        <div class="row">
+          <div class="col-md-4">
+            <img src="${articles[i].urlToImage}" alt="${articles[i].title}" class="img-thumbnail">
+          </div>
+          <div class="col-md-8">
+            <h3>${articles[i].title}</h3>
+            <p>${articles[i].description}</p>
+            <a href="${articles[i].url}" class="btn btn-primary" target="_blank">Read More</a>
+          </div>
+        </div>
+        <hr>
+      `;
+    }
 
-    const table = generateTable(data, columns);
-    tableContainer.appendChild(table);
+    // Append output to news-container div
+    $("#news-container").html(output);
+  })
+  .catch(function (error) {
+    console.log(error);
   });
 
-// generate table
-const generateTable = function (data, columns) {
-  const table = document.createElement("table");
-  table.classList.add("table", "table-hover");
+// Live search functionality
+$(document).on("keyup", "#search-input", function () {
+  const searchTerm = $(this).val().toLowerCase();
 
-  const thead = document.createElement("thead");
-  thead.classList.add("bg-primary", "text-light");
-
-  const tr = document.createElement("tr");
-  columns.forEach(column => {
-    const th = document.createElement("th");
-    th.innerText = column.title;
-    tr.appendChild(th);
+  // Filter articles based on search term
+  const filteredArticles = data.articles.filter(function (article) {
+    return (
+      article.title.toLowerCase().includes(searchTerm) ||
+      article.description.toLowerCase().includes(searchTerm)
+    );
   });
-  thead.appendChild(tr);
-  table.appendChild(thead);
 
-  const tbody = document.createElement("tbody");
-  data.forEach(rowData => {
-    const tr = document.createElement("tr");
-    tr.classList.add("table-bordered", "border-dark");
+  // otomatis megenerate content terfilter
+  let output = "";
+  for (let i = 0; i < filteredArticles.length; i++) {
+    output += `
+      <div class="row">
+        <div class="col-md-4">
+          <img src="${filteredArticles[i].urlToImage}" alt="${filteredArticles[i].title}" class="img-thumbnail">
+        </div>
+        <div class="col-md-8">
+          <h3>${filteredArticles[i].title}</h3>
+          <p>${filteredArticles[i].description}</p>
+          <a href="${filteredArticles[i].url}" class="btn btn-primary" target="_blank">Read More</a>
+        </div>
+      </div>
+      <hr>
+    `;
+  }
 
-    columns.forEach(column => {
-      const td = document.createElement("td");
-      td.classList.add("table-striped", "table-bordered", "border-dark");
-      if (column.field === "address") {
-        td.innerText = `${rowData.address.street}, ${rowData.address.suite}, ${rowData.address.city}`;
-      } else if (column.field === "company") {
-        td.innerText = rowData.company.name;
-      } else {
-        td.innerText = rowData[column.field];
-      }
-      tr.appendChild(td);
-    });
-    tbody.appendChild(tr);
-  });
-  table.appendChild(tbody);
-
-  return table;
-};
+  // Update news-container with filtered articles
+  $("#news-container").html(output);
+});
