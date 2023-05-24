@@ -1,0 +1,22 @@
+import { newsCard } from "./newsCard.js";
+
+export const displayNews = articles => {
+  const newsDetails = document.getElementById("newsDetails");
+
+  if (!newsDetails) {
+    console.error("Required element not found!");
+    return;
+  }
+
+  if (articles.length === 0) {
+    newsDetails.innerHTML = "<h5>No news found.</h5>";
+    return;
+  }
+
+  newsDetails.innerHTML = "";
+  articles.forEach(article => {
+    const { title, urlToImage, description, publishedAt, url } = article;
+    const card = newsCard(title, urlToImage, description, publishedAt, url);
+    newsDetails.insertAdjacentHTML("beforeend", card);
+  });
+};
